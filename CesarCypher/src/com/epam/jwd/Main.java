@@ -4,9 +4,14 @@ public class Main {
 
     public static void main(String[] args) {
         String rusAlphabet = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+        String andrew3 = "увидимсявозлемагазинавполовинутретьегочасавозьмиссобойденьгиирюкзакдляпродуктов";
+        String test = "Дизотьотокклмикауасрнтачтоаьаеогвлвпитиазьтеддяссвнала";
+        int keyCesar = 22;
+        int keyRT = 5;
         Cesar cesar = new Cesar(rusAlphabet);
         Gramota gramota = new Gramota();
         RouteTransportation rt = new RouteTransportation();
+        System.out.println(rt.decrypth(test, 9));
     }
 }
 
@@ -35,6 +40,7 @@ class Cesar {
     }
 
     public void bruteforceDecrypt(String text) {
+        RouteTransportation rt = new RouteTransportation();
         text = text.toLowerCase();
         char[] charText = text.toCharArray();
         char[] charAlphabet = alphabet.toCharArray();
@@ -48,7 +54,9 @@ class Cesar {
                 if (alphabet.indexOf(charText[i]) == -1) continue;
                 charText[i] = charEncryptAlphabet[alphabet.indexOf(charText[i])];
             }
-            System.out.println(String.valueOf(charText) + " key: " + (32 - j));
+            String result = String.valueOf(charText);
+            //String result = rt.decrypth(String.valueOf(charText), 5);
+            System.out.println(result + " key: " + (32 - j));
         }
     }
 }
@@ -58,16 +66,15 @@ class Gramota {
     private String tabGramota2 = "щшчцхфтсрп";
 
     public String crypt(String text) {
+        text = text.replaceAll("[\\s\\,\\.\\-\\–\\:\\;]", "");
         text = text.toLowerCase();
         char[] charText = text.toCharArray();
         for (int i = 0; i < text.length(); i++) {
             if (tabGramota1.indexOf(charText[i]) != -1) {
                 charText[i] = tabGramota2.charAt(tabGramota1.indexOf(charText[i]));
-            }
-            else if (tabGramota2.indexOf(charText[i]) != -1){
+            } else if (tabGramota2.indexOf(charText[i]) != -1) {
                 charText[i] = tabGramota1.charAt(tabGramota2.indexOf(charText[i]));
-            }
-            else continue;
+            } else continue;
         }
         return String.valueOf(charText);
     }
@@ -75,14 +82,17 @@ class Gramota {
 
 class RouteTransportation {
     public String encrypt(String text, int key) {
+        text = text.replaceAll("[\\s\\,\\.\\-\\–\\:\\;]", "");
         text = text.toLowerCase();
         int w = key;
-        int h = (int)Math.ceil((double)text.length()/key);
+        int h = (int) Math.ceil((double) text.length() / key);
         char[][] table = new char[h][w];
         int ind = 0;
         for (int i = 0; i < h; i++) {
             for (int j = 0; j < w; j++) {
-                if (ind >= text.length()) { break; }
+                if (ind >= text.length()) {
+                    break;
+                }
                 table[i][(i % 2 == 0) ? j : (w - j - 1)] = text.charAt(ind++);
             }
         }
@@ -94,13 +104,46 @@ class RouteTransportation {
         }
         return result;
     }
+
     public String decrypth(String text, int key) {
+        text = text.toLowerCase();
+        int w = key;
+        int h = (int) Math.ceil((double) text.length() / key);
+        Character[][] table = new Character[h][w];
+        int ind = 0;
+        String result = "";
+        int empty = key - text.length() % w;
+        if (empty == key) { empty = 0; }
+        System.out.println(empty);
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                if (ind >= text.length()) {
+                    break;
+                }
+                if ((h % 2 == 0 && j == h - 1 && i < empty) || (h % 2 > 0 && j == h - 1 && i >= w - empty)) {
+                    table[j][i] = Character.MIN_VALUE;
+                    continue;
+                }
+                table[j][i] = text.charAt(ind++);
+            }
+        }
+
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
+                result += table[i][(i % 2 == 0) ? j : (w - j - 1)];
+            }
+        }
+        return result;
+    }
+
+    public String decrypthLox(String text, int key) {
         text = text.toLowerCase();
         int w = key;
         int h = (int)Math.ceil((double)text.length()/key);
         Character[][] table = new Character[h][w];
         int ind = 0;
         String result = "";
+        int empty = key - text.length() % w;
         if (text.length() % w == 0) {
             for (int i = 0; i < w; i++) {
                 for (int j = 0; j < h; j++) {
@@ -117,7 +160,7 @@ class RouteTransportation {
                         if (ind >= text.length()) {
                             break;
                         }
-                        if (j == h - 1 && i == 0) {table[j][i] = Character.MIN_VALUE; continue;}
+                        if (j == h - 1 && j < empty) {table[j][i] = Character.MIN_VALUE; continue;}
                         table[j][i] = text.charAt(ind++);
                     }
                 }
@@ -142,7 +185,7 @@ class RouteTransportation {
     }
 }
 
-class Vigenere{
+class Vigenere {
     public static String crypt(String plaintext, String key, boolean encrypt, String alphabet) {
         plaintext = plaintext.toLowerCase();
         char[] specChar = new char[plaintext.length()];
@@ -150,8 +193,11 @@ class Vigenere{
 
         for (int i = 0; i < StringArray.length; i++) {
             if (StringArray[i] == ' ' || StringArray[i] == ',' || StringArray[i] == '.' || StringArray[i] == '-' ||
-                    StringArray[i] == '–'  || StringArray[i] == ';' || StringArray[i] == ':') { specChar[i] = StringArray[i]; }
-            else { specChar[i] = '#'; }
+                    StringArray[i] == '–' || StringArray[i] == ';' || StringArray[i] == ':') {
+                specChar[i] = StringArray[i];
+            } else {
+                specChar[i] = '#';
+            }
         }
         plaintext = plaintext.replaceAll("[\\s\\,\\.\\-\\–\\:\\;]", "");
         int alphabetSize = alphabet.length();
@@ -165,13 +211,11 @@ class Vigenere{
             int plainPos = alphabet.indexOf(plainChar); // plain character's position in alphabet string
             if (plainPos == -1) { // if character not in alphabet just append unshifted one to the result text
                 encryptedText.append(plainChar);
-            }
-            else { // if character is in alphabet shift it and append the new character to the result text
+            } else { // if character is in alphabet shift it and append the new character to the result text
                 final int keyPos = alphabet.indexOf(keyChar); // key character's position in alphabet string
                 if (encrypt) { // encrypt the input text
-                    encryptedText.append(alphabet.charAt((plainPos+keyPos) % alphabetSize));
-                }
-                else { // decrypt the input text
+                    encryptedText.append(alphabet.charAt((plainPos + keyPos) % alphabetSize));
+                } else { // decrypt the input text
                     int shiftedPos = plainPos - keyPos;
                     if (shiftedPos < 0) { // negative numbers cannot be handled with modulo
                         shiftedPos += alphabetSize;
@@ -182,7 +226,9 @@ class Vigenere{
         }
         for (int i = 0; i < specChar.length; i++) {
             if (specChar[i] == ' ' || specChar[i] == ',' || specChar[i] == '.' || specChar[i] == '-' ||
-                    specChar[i] == '–' || specChar[i] == ';' || specChar[i] == ':') { encryptedText.insert(i, specChar[i]); }
+                    specChar[i] == '–' || specChar[i] == ';' || specChar[i] == ':') {
+                encryptedText.insert(i, specChar[i]);
+            }
         }
         return encryptedText.toString();
     }
